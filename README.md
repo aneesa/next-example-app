@@ -4,6 +4,9 @@ Example of a Next.js App
 ## Motivation
 Help others to set up a Next.js app quickly without having to go through Next.js' official "Getting Started" documentation
 
+## Credits
+[Next.js' Getting Started Guide](https://nextjs.org/learn/basics/getting-started)
+
 ## Next.js Features
 - Pages Layout
 - Hot Module Replacement (HMR)
@@ -254,9 +257,57 @@ export default function About() {
 }
 ```
 
+## Dynamic Pages
+- Update `pages/index.js` to display a list of posts
+```
+import Layout from '../components/Layout';
+import Link from 'next/link';
 
-## Credits
-[Next.js' Getting Started Guide](https://nextjs.org/learn/basics/getting-started)
+const PostLink = props => (
+  <li>
+    <Link href={`/post?title=${props.title}`}>
+      <a>{props.title}</a>
+    </Link>
+  </li>
+);
+export default function Blog() {
+  return (
+    <Layout>
+      <h1>My Blog</h1>
+      <ul>
+        <PostLink title="Hello Next.js" />
+        <PostLink title="Learn Next.js is awesome" />
+        <PostLink title="Deploy apps with Zeit" />
+      </ul>
+    </Layout>
+  );
+}
+```
+
+- Add `pages/post.js` to get data from `query strings`
+```
+import { useRouter } from 'next/router';
+import Layout from '../components/Layout.js';
+
+const Content = () => {
+  const router = useRouter();
+  return (
+    <>
+      <h1>{router.query.title}</h1>
+      <p>This is the blog post content.</p>
+    </>
+  );
+};
+
+const Page = () => (
+  <Layout>
+    <Content />
+  </Layout>
+);
+
+export default Page;
+```
+- Use `useRouter` to access the `router` object to get the query
 
 ## License
 
