@@ -11,6 +11,9 @@ Help others to set up a Next.js app quickly without having to go through Next.js
 - Pages Layout
 - Hot Module Replacement (HMR)
 - Client-side Navigation
+- Dynamic Pages
+- Dynamic Routing
+- Server Side Rendering
 
 ## vs Create React App
 - Manually organize Pages Layout
@@ -356,7 +359,93 @@ export default function Blog() {
   );
 }
 ```
-- The path of the page is passed in the `href`prop and the URL in the browser is passed in the `as` prop
+- The path of the page is passed in the `href` prop and the URL in the browser is passed in the `as` prop
+
+## Fetching Data
+- Install `isomorphic-unfetch`. It's a library we can use to fetch data from an API
+```
+npm install --save isomorphic-unfetch
+```
+
+- Create `tv/index.js` with the following content
+```
+import Layout from '../../components/Layout';
+import Link from 'next/link';
+import fetch from 'isomorphic-unfetch';
+
+const Index = props => (
+  <Layout>
+    <h1>Batman TV Shows</h1>
+    <ul>
+      {props.shows.map(show => (
+        <li key={show.id}>
+          <Link href="/tv/[id]" as={`/tv/${show.id}`}>
+            <a>{show.name}</a>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </Layout>
+);
+
+Index.getInitialProps = async function() {
+  const res = await fetch('https://api.tvmaze.com/search/shows?q=batman');
+  const data = await res.json();
+
+  console.log(`Show data fetched. Count: ${data.length}`);
+
+  return {
+    shows: data.map(entry => entry.show)
+  };
+};
+
+export default Index;
+```
+
+- `getInitialProps` is a static async function you can add into any page and it works on both server and the client
+- We can fetch the API from this function
+
+- Add the new page to the `Header`
+```
+<Link href="/tv">
+  <a style={linkStyle}>TV</a>
+</Link>
+```
+
+- Now navigate to `TV` and refresh the page
+- First time loading/refresh will render the page on the server do you should see the `Show data fetched...` log on the server's terminal
+- Since the data has been fetched, it won't be fetched again from the client side
+
+- Add detailed TV Show to `pages/tv/[id].js`
+```
+import Layout from '../../components/Layout';
+import fetch from 'isomorphic-unfetch';
+
+const Post = props => (
+  <Layout>
+    <h1>{props.show.name}</h1>
+    <p>{props.show.summary.replace(/<[/]?p>/g, '')}</p>
+    <img src={props.show.image.medium} />
+  </Layout>
+);
+
+Post.getInitialProps = async function(context) {
+  const { id } = context.query;
+  const res = await fetch(`https://api.tvmaze.com/shows/${id}`);
+  const show = await res.json();
+
+  console.log(`Fetched show: ${show.name}`);
+
+  return { show };
+};
+
+export default Post;
+```
+
+- The `context` object inside `getInitialProps` has the query object we can use to get the id from the dynamic routing
+- Now navigate to `TV`, then choose a show
+- When we click on `<Link>`, the page transition takes place in the browser, without making a request to the server
+- So this time, `Fetched show...` log is displayed on the browser console because the data is fetched from the client side
 
 ## License
 
