@@ -309,6 +309,55 @@ export default Page;
 ```
 - Use `useRouter` to access the `router` object to get the query
 
+## Clean URLs with Dynamic Routing
+- Let's create a dynamic route by adding a new page to `pages/p/[id].js`
+```
+import { useRouter } from 'next/router';
+import Layout from '../../components/Layout';
+
+export default function Post() {
+  const router = useRouter();
+
+  return (
+    <Layout>
+      <h1>{router.query.id}</h1>
+      <p>This is the blog post content.</p>
+    </Layout>
+  );
+}
+```
+
+- To make a dynamic route, put brackets `[]` in the page name
+- Access the name from the `router` object
+
+- Let's add multiple links to use the dynamic route in `pages/index.js`
+```
+import Layout from '../components/Layout';
+import Link from 'next/link';
+
+const PostLink = props => (
+  <li>
+    <Link href="/p/[id]" as={`/p/${props.id}`}>
+      <a>{props.id}</a>
+    </Link>
+  </li>
+);
+
+export default function Blog() {
+  return (
+    <Layout>
+      <h1>My Blog</h1>
+      <ul>
+        <PostLink id="hello-nextjs" />
+        <PostLink id="learn-nextjs" />
+        <PostLink id="deploy-nextjs" />
+      </ul>
+    </Layout>
+  );
+}
+```
+- The path of the page is passed in the `href`prop and the URL in the browser is passed in the `as` prop
+
 ## License
 
 ISC © [Aneesa Awaludin]()
