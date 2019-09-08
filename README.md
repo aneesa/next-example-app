@@ -14,6 +14,7 @@ Help others to set up a Next.js app quickly without having to go through Next.js
 - Dynamic Pages
 - Dynamic Routing
 - Server Side Rendering
+- Styling Components with CSS in JS
 
 ## vs Create React App
 - Manually organize Pages Layout
@@ -446,6 +447,147 @@ export default Post;
 - Now navigate to `TV`, then choose a show
 - When we click on `<Link>`, the page transition takes place in the browser, without making a request to the server
 - So this time, `Fetched show...` log is displayed on the browser console because the data is fetched from the client side
+
+## Styling Components
+- The styling techniques can be categorized into two broad methods
+1. Traditional CSS-file-based styling (including SASS, PostCSS etc)
+2. CSS in JS styling
+
+- However, we have to take SSR into consideration when styling Next.js because there are a few practical issues to consider with the traditional CSS-file-based styling
+- Instead, CSS in JS is recommended
+- Next.js is preloaded with `style-jsx` where the CSS rules are scoped - the rules have no impact to anything other than the components, not even child components
+
+- Update `pages/index.js`
+```
+import Layout from '../components/Layout';
+import Link from 'next/link';
+
+function getPosts() {
+  return [
+    { id: 'hello-nextjs', title: 'Hello Next.js' },
+    { id: 'learn-nextjs', title: 'Learn Next.js is awesome' },
+    { id: 'deploy-nextjs', title: 'Deploy apps with ZEIT' }
+  ];
+}
+
+const PostLink = ({ post }) => (
+  <li>
+    <Link href="/p/[id]" as={`/p/${post.id}`}>
+      <a>{post.title}</a>
+    </Link>
+    <style jsx>{`
+      li {
+        list-style: none;
+        margin: 5px 0;
+      }
+
+      a {
+        text-decoration: none;
+        color: blue;
+        font-family: 'Arial';
+      }
+
+      a:hover {
+        opacity: 0.6;
+      }
+    `}</style>
+  </li>
+);
+
+export default function Blog() {
+  return (
+    <Layout>
+      <h1>My Blog</h1>
+      <ul>
+        {getPosts().map(post => (
+          <PostLink key={post.id} post={post} />
+        ))}
+      </ul>
+      <style jsx>{`
+        h1,
+        a {
+          font-family: 'Arial';
+        }
+
+        ul {
+          padding: 0;
+        }
+
+        li {
+          list-style: none;
+          margin: 5px 0;
+        }
+
+        a {
+          text-decoration: none;
+          color: blue;
+        }
+
+        a:hover {
+          opacity: 0.6;
+        }
+      `}</style>
+    </Layout>
+  );
+}
+```
+
+- Let's install `react-markdown` for the some global styling example (Check out [Global Selectors](https://github.com/zeit/styled-jsx#one-off-global-selectors) as well)
+```
+npm install --save react-markdown
+```
+
+- Update `pages/p/[id].js`
+```
+import { useRouter } from 'next/router';
+import Markdown from 'react-markdown';
+import Layout from '../../components/Layout';
+
+export default () => {
+  const router = useRouter();
+  return (
+    <Layout>
+      <h1>{router.query.id}</h1>
+      <div className="markdown">
+        <Markdown
+          source={`
+This is our blog post.
+Yes. We can have a [link](/link).
+And we can have a title as well.
+
+### This is a title
+
+And here's the content.
+      `}
+        />
+      </div>
+      <style jsx global>{`
+        .markdown {
+          font-family: 'Arial';
+        }
+
+        .markdown a {
+          text-decoration: none;
+          color: blue;
+        }
+
+        .markdown a:hover {
+          opacity: 0.6;
+        }
+
+        .markdown h3 {
+          margin: 0;
+          padding: 0;
+          text-transform: uppercase;
+        }
+      `}</style>
+    </Layout>
+  );
+};
+```
+
+- Styled jsx works as a babel plugin. It will parse all of the CSS and apply it in the build process. (With that our styles get applied without any overhead time)
+- Check out [other styling solutions](https://github.com/zeit/next.js#css-in-js)
 
 ## License
 
