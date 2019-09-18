@@ -12,6 +12,9 @@ const Header = () => (
     <Link href="/tv">
       <a style={linkStyle}>TV</a>
     </Link>
+    <Link href="/todos">
+      <a style={linkStyle}>To Dos</a>
+    </Link>
     <Link href="/about">
       <a style={linkStyle}>About</a>
     </Link>

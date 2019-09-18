@@ -589,6 +589,77 @@ And here's the content.
 - Styled jsx works as a babel plugin. It will parse all of the CSS and apply it in the build process. (With that our styles get applied without any overhead time)
 - Check out [other styling solutions](https://github.com/zeit/next.js#css-in-js)
 
-## License
+## API Routes
+- Easily build your APIs
+- Set up APIs layout `pages/api`
+```
+mkdir pages/api
+```
 
+- The files in `pages/api/*` map to the route `api/*`
+- Create Posts API by creating the file `pages/api/todos.js`
+```
+export default (req, res) => {
+  if (req.method === 'POST') {
+    // Process your POST request
+  } else {
+    // Handle the rest of your HTTP methods
+    res.setHeader('Content-Type', 'application/json')
+    res.statusCode = 200
+    res.end(JSON.stringify([
+      {
+        id: 1,
+        task: 'Deploy app',
+      },
+      {
+        id: 2,
+        task: 'Clean House',
+      },
+      {
+        id: 3,
+        task: 'Wash Car',
+      }
+    ]))
+  }
+}
+```
+- `req` refers to [NextApiRequest](https://github.com/zeit/next.js/blob/v9.0.0/packages/next-server/lib/utils.ts#L143-L158) which extends [http.IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage)
+- `res` refers to [NextApiResponse](https://github.com/zeit/next.js/blob/v9.0.0/packages/next-server/lib/utils.ts#L168-L178) which extends [http.ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse)
+
+- Create page `pages/todos.js`
+```
+import Layout from '../components/Layout';
+import Link from 'next/link';
+
+const Todos = props => (
+  <Layout>
+    <h1>To Dos</h1>
+    {props.tasks.map(task => (
+      <div key={task.id}>
+        <p>{task.id} - {task.task}</p>
+      </div>
+    ))}
+  </Layout>
+);
+
+Todos.getInitialProps = async function() {
+  const res = await fetch('http://localhost:3000/api/todos');
+  const tasks = await res.json();
+
+  return { tasks };
+};
+
+export default Todos;
+```
+
+- Update `components/Header.js`
+```
+<Link href="/todos">
+  <a style={linkStyle}>To Dos</a>
+</Link>
+```
+
+- API pages also support dynamic routing. I.e `pages/api/todos/[id].js`
+
+## License
 ISC © [Aneesa Awaludin]()
